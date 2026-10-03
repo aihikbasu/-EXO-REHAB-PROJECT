@@ -3,6 +3,8 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
+from core.emg_control import EMGProportionalController
+
 CONTROLLERS = [
     ("0", "Zero Torque"),
     ("1", "Assist-as-Needed"),
@@ -34,7 +36,10 @@ class RunTrialPage(tk.Frame):
             font=("Segoe UI", 16, "bold"),
         ).pack(anchor="w", padx=24, pady=(24, 4))
 
+        self.emg_controller = EMGProportionalController()
+
         self._build_strategy_panel()
+        self._build_emg_panel()
         self._build_logging_panel()
 
     def _build_strategy_panel(self):
@@ -119,6 +124,84 @@ class RunTrialPage(tk.Frame):
             trial["swing"] = self.swing_var.get()
             trial["estim"] = self.estim_var.get()
             self.save_config()
+
+    def _build_emg_panel(self):
+        panel = tk.LabelFrame(
+            self, text="EMG Confidence-Weighted Control (trained classifier)",
+            bg="white", padx=16, pady=16,
+        )
+        panel.pack(anchor="w", padx=24, fill="x", pady=(0, 12))
+
+        if not self.emg_controller.available:
+            tk.Label(
+                panel, bg="white", fg="#b91c1c",
+                text=f"Classifier model not available: {self.emg_controller.load_error}",
+                wraplength=500, justify="left",
+            ).pack(anchor="w")
+            return
+
+        tk.Label(
+            panel, bg="white", fg="#6b7280", wraplength=520, justify="left",
+            text=(
+                "Instead of switching strategies on a single hard prediction, this blends "
+                "stance/swing setpoints proportionally to the classifier's confidence across "
+                "all four gestures. Each sample below is a real feature row from the trained "
+                "model's held-out test set, not a fabricated number."
+            ),
+        ).pack(anchor="w", pady=(0, 10))
+
+        self.emg_bars = {}
+        for gesture in ("rest", "flexion", "extension", "grasp"):
+            row = tk.Frame(panel, bg="white")
+            row.pack(anchor="w", fill="x", pady=2)
+            tk.Label(row, text=gesture, bg="white", width=12, anchor="w").pack(side="left")
+            bar = ttk.Progressbar(row, length=200, mode="determinate", maximum=100)
+            bar.pack(side="left", padx=(0, 8))
+            pct = tk.Label(row, text="0%", bg="white", width=6)
+            pct.pack(side="left")
+            self.emg_bars[gesture] = (bar, pct)
+
+        self.emg_blend_var = tk.StringVar(value="Blended setpoint: --")
+        tk.Label(
+            panel, textvariable=self.emg_blend_var, bg="white",
+            font=("Consolas", 9), fg="#0f766e",
+        ).pack(anchor="w", pady=(8, 10))
+
+        self.emg_sample_btn = ttk.Button(
+            panel, text="Sample EMG Window", command=self._sample_emg,
+        )
+        self.emg_sample_btn.pack(anchor="w")
+
+        self.emg_apply_btn = ttk.Button(
+            panel, text="Apply Blended Setpoint to Controls Above",
+            command=self._apply_emg_blend, state="disabled",
+        )
+        self.emg_apply_btn.pack(anchor="w", pady=(6, 0))
+
+        self._last_blend = None
+
+    def _sample_emg(self):
+        features, true_label = self.emg_controller.sample_window()
+        result = self.emg_controller.predict_proportional(features)
+
+        for gesture, (bar, pct) in self.emg_bars.items():
+            p = result["probabilities"].get(gesture, 0.0) * 100
+            bar["value"] = p
+            pct.configure(text=f"{p:.0f}%")
+
+        self.emg_blend_var.set(
+            f"Blended setpoint: stance={result['blended_stance']}, "
+            f"swing={result['blended_swing']}  (true label: {true_label})"
+        )
+        self._last_blend = result
+        self.emg_apply_btn.configure(state="normal")
+
+    def _apply_emg_blend(self):
+        if self._last_blend is None:
+            return
+        self.stance_var.set(str(self._last_blend["blended_stance"]))
+        self.swing_var.set(str(self._last_blend["blended_swing"]))
+        self._update_preview()
 
     def _build_logging_panel(self):
         panel = tk.LabelFrame(self, text="Data Logging", bg="white", padx=16, pady=16)

@@ -1,0 +1,20 @@
+{
+  "assumed_sample_rate_hz": 200,
+  "window_size_samples": 200,
+  "step_size_samples": 100,
+  "step_time_ms": 500.0,
+  "feature_extraction_ms": {
+    "mean": 1.183,
+    "p95": 1.304
+  },
+  "svm_inference_ms": {
+    "mean": 0.092,
+    "p95": 0.111
+  },
+  "random_forest_inference_ms": {
+    "mean": 9.447,
+    "p95": 9.976
+  },
+  "svm_real_time_feasible": true,
+  "random_forest_real_time_feasible": true
+}

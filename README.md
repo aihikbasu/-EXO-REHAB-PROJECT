@@ -1,68 +1,68 @@
-# EMG Gesture Classification
+# EMG Gesture Classification for Exoskeleton Control
 
 Classifiers for surface EMG gesture recognition (rest, flexion, extension,
-grasp), built for the wearable rehabilitation exoskeleton project.
+grasp), built for the wearable rehabilitation exoskeleton project, with
+three methodological contributions beyond standard classification.
 
 ## Data
 
-Raw, labeled EMG recordings from 10 real subjects (20 sessions), sourced
-from the public UCI "EMG Data for Gestures" dataset (Myo armband, 8
-channels, millisecond-resolution timestamps, per-sample gesture labels).
+Raw, labeled EMG recordings from 10 real subjects (20 sessions), from the
+public UCI "EMG Data for Gestures" dataset (Myo armband, 8 channels,
+per-sample gesture labels).
 Source: https://archive.ics.uci.edu/dataset/481/emg+data+for+gestures
 
-Each file is a continuous recording where the subject performs a sequence
-of gestures. `build_dataset.py` slices contiguous same-label segments into
-overlapping windows and extracts features per window.
-
-Label mapping used (4 of the dataset's 7 original classes, matching the
-project's target gestures):
-| Raw label | Gesture |
-|---|---|
-| 1 | rest |
-| 2 | grasp (hand clenched in a fist) |
-| 3 | flexion (wrist flexion) |
-| 4 | extension (wrist extension) |
-
-Radial/ulnar deviation and unmarked samples are excluded.
-
-## Files
+## Base Pipeline
 
 - `features.py` -- feature extraction from raw EMG windows (zero crossings,
   slope sign changes, mean absolute value, waveform length, RMS, variance)
-- `build_dataset.py` -- segments raw labeled recordings into windows and
-  builds the feature dataset (`data/emg_gesture_dataset.csv`)
-- `train.py` -- trains and evaluates SVM and Random Forest classifiers
+- `build_dataset.py` -- segments raw labeled recordings into overlapping
+  windows (grouped by gesture repetition and subject), extracts features
+- `train.py` -- trains/evaluates SVM and Random Forest with a leakage-free,
+  grouped train/test split
 
-## Methodology note: avoiding data leakage
+**Base results**: 2,470 windows, 4 balanced classes, 10 subjects.
+SVM 96.0% / Random Forest 96.2% accuracy (within-subject-pool split).
 
-Windows are extracted with 50% overlap, so windows from the same gesture
-repetition are highly similar to each other. An initial version of this
-pipeline split windows into train/test independently, which let near-
-identical overlapping windows leak across the split and produced an
-inflated, meaningless 100% accuracy. This was caught and fixed: the final
-version splits by gesture repetition (`GroupShuffleSplit`), so all windows
-from a given repetition stay entirely in either train or test. The results
-below reflect genuine performance on unseen repetitions.
+## Novelty 1: Cross-Subject Generalization + Calibration
 
-## Results
+`loso_calibration.py` -- EMG signal characteristics vary between people, so
+a classifier trained on some subjects often performs worse on a new,
+unseen one. This measures that gap with leave-one-subject-out (LOSO)
+cross-validation, then tests whether a lightweight per-subject calibration
+step (normalizing a new subject's features using a small calibration slice
+of their own data, rather than the training subjects' statistics) closes it.
 
-2,470 windows across 4 balanced classes, from 10 subjects, split by gesture
-repetition (not by individual window).
+**Results**: Mean LOSO accuracy 86.5% without calibration -> 88.2% with
+calibration. The effect is not uniform -- some subjects improve
+substantially (subject 8: 83.8% -> 96.6%), a few see a small decrease. See
+`loso_chart.png`.
 
-| Model | Accuracy |
-|---|---|
-| SVM (RBF kernel) | 96.0% |
-| Random Forest | 96.2% |
+## Novelty 2: Real-Time Feasibility Analysis
 
-Rest and flexion are classified almost perfectly. The main confusion is
-grasp vs. flexion (both involve finger-flexor activation), consistent with
-the underlying muscle physiology. Confusion matrices are in this repo
-(`confusion_matrix_svm.png`, `confusion_matrix_random_forest.png`).
+`latency_analysis.py` -- accuracy alone doesn't establish that a classifier
+can run inside a live control loop. This measures actual feature
+extraction + inference latency per signal window and checks it against the
+window step time, for both models.
 
-## Next steps
+**Results**: Feature extraction ~1.2ms, SVM inference ~0.1ms, Random Forest
+inference ~9.4ms -- both comfortably within the 500ms-per-step budget at
+the dataset's ~200Hz sampling rate. Measured on a development machine, not
+yet the target Raspberry Pi; worth re-measuring once hardware is available.
 
-- Replace this public dataset with live data from the lab's own EMG sensors
-  once an activity-timing protocol is available for it
-- Build a loader matching the lab sensors' actual file format once known
-- Feed classifier output into the exoskeleton GUI's Run Trial page to
-  directly drive the assistance strategy / actuator control
+## Novelty 3: Confidence-Weighted Proportional Control
+
+`rehab_gui/core/emg_control.py` -- rather than a hard classification
+switching the assistance strategy abruptly, this exposes the classifier's
+full probability distribution over gestures and blends the GUI's
+stance/swing setpoints proportionally to that confidence -- closer to
+proportional myoelectric control than a discrete switch. Wired directly
+into the Run Trial page of the exoskeleton GUI, using the actual trained
+model (not a mock), sampling real held-out feature rows as a stand-in for
+a live EMG stream.
+
+## Next Steps
+
+- Replace the public dataset with live data from the lab's own EMG
+  sensors, once an activity-timing protocol is available
+- Re-measure latency on the actual Raspberry Pi
+- Extend calibration to require even less labeled data per new subject

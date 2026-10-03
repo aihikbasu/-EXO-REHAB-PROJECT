@@ -52,8 +52,15 @@ def windows_for_run(df_run, label, run_key):
     return rows
 
 
+def subject_id_from_filename(path):
+    """subject_01_1_raw_data_... -> '01'"""
+    name = path.split("/")[-1]
+    return name.split("_")[1]
+
+
 def build_from_file(path):
     subject = path.split("/")[-1].replace(".txt", "")
+    subject_id = subject_id_from_filename(path)
     df = load_subject_file(path)
     df = df[df["class"].isin(LABEL_MAP.keys())].reset_index(drop=True)
 
@@ -63,7 +70,10 @@ def build_from_file(path):
     for run_id, run_df in df.groupby("run_id"):
         label = LABEL_MAP[run_df["class"].iloc[0]]
         run_key = f"{subject}_run{run_id}"
-        all_rows.extend(windows_for_run(run_df, label, run_key))
+        rows = windows_for_run(run_df, label, run_key)
+        for r in rows:
+            r.append(subject_id)
+        all_rows.extend(rows)
     return all_rows
 
 
@@ -76,6 +86,7 @@ def main():
         columns += [f"ch{ch}_zc", f"ch{ch}_ssc", f"ch{ch}_mav", f"ch{ch}_wl", f"ch{ch}_rms", f"ch{ch}_var"]
     columns.append("label")
     columns.append("run_id")
+    columns.append("subject_id")
 
     all_rows = []
     for path in files:
