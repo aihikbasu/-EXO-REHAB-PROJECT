@@ -3,6 +3,7 @@ import tkinter as tk
 from core.config_store import load_config, save_config
 from core.sensor_source import SensorSource
 from gui.nav import NavBar
+from gui.pages.analytics import AnalyticsPage
 from gui.pages.instructions import InstructionsPage
 from gui.pages.preliminary_testing import PreliminaryTestingPage
 from gui.pages.run_trial import RunTrialPage
@@ -11,13 +12,14 @@ PAGES = [
     ("instructions", "Instructions"),
     ("preliminary", "Preliminary Testing"),
     ("trial", "Run Trial"),
+    ("analytics", "Session Analytics"),
 ]
 
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Exoskeleton GUI")
+        self.title("Exoskeleton Rehabilitation System GUI")
         self.geometry("1180x760")
         self.configure(bg="white")
 
@@ -53,6 +55,10 @@ class App(tk.Tk):
         self.pages["trial"] = RunTrialPage(
             self.body, self.sensor, self.set_status, self.config, self.save_config
         )
+        self.pages["analytics"] = AnalyticsPage(
+            self.body, self.sensor, self.set_status, self.config, self.save_config
+        )
+
 
     def save_config(self):
         save_config(self.config)

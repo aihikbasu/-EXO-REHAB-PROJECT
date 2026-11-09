@@ -49,16 +49,31 @@ inference ~9.4ms -- both comfortably within the 500ms-per-step budget at
 the dataset's ~200Hz sampling rate. Measured on a development machine, not
 yet the target Raspberry Pi; worth re-measuring once hardware is available.
 
-## Novelty 3: Confidence-Weighted Proportional Control
+## Novelty 3: Confidence-Weighted Proportional Control & Smoothing
 
 `rehab_gui/core/emg_control.py` -- rather than a hard classification
 switching the assistance strategy abruptly, this exposes the classifier's
 full probability distribution over gestures and blends the GUI's
 stance/swing setpoints proportionally to that confidence -- closer to
-proportional myoelectric control than a discrete switch. Wired directly
-into the Run Trial page of the exoskeleton GUI, using the actual trained
-model (not a mock), sampling real held-out feature rows as a stand-in for
-a live EMG stream.
+proportional myoelectric control than a discrete switch.
+- **Dynamic EMA Filtering**: Smoothed with an Exponential Moving Average
+  ($\alpha=0.35$) to eliminate actuator chatter during gesture transitions.
+- **Confidence Deadband**: Ambiguous or low-confidence predictions ($p < 0.30$)
+  automatically decay gracefully toward resting equilibrium to prevent false actuation.
+- Wired directly into the Run Trial page and Session Analytics page.
+
+## System Architecture & Exoskeleton GUI
+
+`rehab_gui/` -- 4-page interactive Tkinter desktop interface:
+- **Instructions**: Hardware communication setup (USB / Bluetooth, COM port, baud rate, trigger sync).
+- **Preliminary Testing**: Real-time sensor plots (~30 Hz), potentiometer calibration, and diagnostic sweeps.
+- **Run Trial**: Assistance strategy selection, live proportional EMG setpoint blending, and session logging.
+- **Session Analytics**: Clinical audit dashboard, gesture activation distribution, assistive torque profiles, and CSV export.
+
+## Optimization Updates
+
+- `features.py` fully vectorized with NumPy array operations, removing Python loop overhead for zero crossings and slope sign changes.
+- Comprehensive technical report generated in `HUMAN_WRITTEN_PROJECT_REPORT.md`.
 
 ## Next Steps
 
@@ -66,3 +81,4 @@ a live EMG stream.
   sensors, once an activity-timing protocol is available
 - Re-measure latency on the actual Raspberry Pi
 - Extend calibration to require even less labeled data per new subject
+
