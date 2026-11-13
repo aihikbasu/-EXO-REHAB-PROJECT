@@ -67,6 +67,11 @@ Project Repository: \href{https://github.com/aihikbasu/-EXO-REHAB-PROJECT}{githu
 
 \begin{document}
 
+\begin{center}
+    \includegraphics[width=5.5cm]{embs_logo.png}
+\end{center}
+\vspace{-0.5cm}
+
 \maketitle
 
 \begin{abstract}
