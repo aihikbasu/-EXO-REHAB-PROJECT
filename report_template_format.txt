@@ -55,13 +55,58 @@
 {\textbf{\large IEEE Engineering in Medicine and Biology Society}\par}
 {\textbf{\large Student Branch Chapter of IIT Kharagpur}\par}
 
-\vspace{1.5cm}
-% Official IEEE EMBS IIT Kharagpur Logo
+\vspace{1.2cm}
+% Official IEEE EMBS IIT Kharagpur Logo (Self-contained vector graphic - renders with zero external file dependencies)
 \begin{center}
-    \includegraphics[width=6.5cm]{embs_logo.png}
-\end{center}
+\begin{tikzpicture}[x=1cm, y=1cm]
+    \definecolor{embsnavy}{RGB}{2,37,131}
+    
+    % --- LEFT: IEEE Diamond Emblem ---
+    \begin{scope}[shift={(0, 0)}]
+        % Outer blue diamond
+        \fill[embsnavy, rounded corners=1.5pt] (0, 1.05) -- (0.85, 0) -- (0, -1.05) -- (-0.85, 0) -- cycle;
+        % Inner white diamond border
+        \draw[white, line width=1.1pt, rounded corners=0.8pt] (0, 0.90) -- (0.72, 0) -- (0, -0.90) -- (-0.72, 0) -- cycle;
+        % Center vertical arrow pointing up
+        \draw[white, line width=1.8pt, -{Stealth[length=5.0pt, width=5.0pt]}] (0, -0.65) -- (0, 0.72);
+        % Right-hand electromagnetic field loops
+        \draw[white, line width=1.0pt] (-0.42, 0.12) arc (160:20:0.45 and 0.18);
+        \draw[white, line width=1.0pt] (-0.42, -0.12) arc (-160:-20:0.45 and 0.18);
+        % "IEEE" text underneath the diamond
+        \node[below=0.15cm of {(0, -1.05)}, font=\bfseries\sffamily\fontsize{11}{13}\selectfont, text=embsnavy, inner sep=0pt] {IEEE};
+    \end{scope}
 
-\vspace{1.8cm}
+    % --- RIGHT: EMB Typography + Human Figure + IIT Kharagpur Section ---
+    \begin{scope}[shift={(2.8, 0)}]
+        % Main "EMB" Letters
+        \node[anchor=west, text=embsnavy, inner sep=0pt] at (-0.95, 0.18) {%
+            \fontsize{42}{44}\selectfont\textbf{\textsf{E\hspace{0.12em}M\hspace{0.12em}B}}%
+        };
+        
+        % Stylized Human Figure (Victory / Active Person over the 'M')
+        \fill[embsnavy] (0.50, 1.35) circle (0.17cm);
+        \draw[embsnavy, line width=3.4pt, line cap=round, line join=round] 
+            (0.12, 1.25) .. controls (0.34, 0.92) and (0.44, 0.74) .. (0.50, 0.62)
+            .. controls (0.56, 0.74) and (0.66, 0.92) .. (0.88, 1.25);
+        
+        % Horizontal circuit line with pulse circle below "EMB"
+        \draw[embsnavy, line width=2.2pt] (-0.95, -0.48) -- (0.24, -0.48);
+        \draw[embsnavy, line width=2.2pt] (0.50, -0.48) circle (0.19cm);
+        \draw[embsnavy, line width=2.2pt] (0.76, -0.48) -- (2.75, -0.48);
+        
+        % "IIT Kharagpur Section" in elegant italic serif
+        \node[anchor=center, text=embsnavy, inner sep=0pt] at (0.90, -0.92) {%
+            \fontsize{14}{16}\selectfont\textit{IIT Kharagpur Section}%
+        };
+        
+        % "EMBS SBC" in bold sans-serif
+        \node[anchor=center, text=embsnavy, inner sep=0pt] at (0.90, -1.35) {%
+            \fontsize{11.5}{13.5}\selectfont\textbf{\textsf{EMBS SBC}}%
+        };
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+\vspace{1.5cm}
 {\normalsize by\par}
 \vspace{0.3cm}
 {\large\textbf{Aihik Basu}\par}
