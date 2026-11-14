@@ -695,28 +695,80 @@ Figure~\ref{fig:box_plot_cv} presents the distribution of 10-fold cross-validati
 \begin{figure}[htbp]
 \centering
 \resizebox{0.92\linewidth}{!}{%
-\begin{tikzpicture}
-\begin{axis}[
-    width=13.0cm,
-    height=4.6cm,
-    ylabel={CV Accuracy (\%)},
-    xlabel={Machine Learning Model},
-    symbolic x coords={LogReg, KNN, DecTree, RandForest, XGBoost, AdaBoost, SVM},
-    xtick=data,
-    ymin=70, ymax=100,
-    ymajorgrids=true,
-    grid style=dashed,
-    boxplot/draw direction=y
-]
-% Box plots for each classifier
-\addplot+[boxplot prepared={lower whisker=80, lower quartile=83, median=85, upper quartile=87, upper whisker=89}, color=blue!70!black, fill=blue!10] coordinates {};
-\addplot+[boxplot prepared={lower whisker=88, lower quartile=90, median=92, upper quartile=94, upper whisker=96}, color=blue!70!black, fill=blue!10] coordinates {};
-\addplot+[boxplot prepared={lower whisker=81, lower quartile=84, median=86, upper quartile=88, upper whisker=90}, color=blue!70!black, fill=blue!10] coordinates {};
-\addplot+[boxplot prepared={lower whisker=93, lower quartile=95, median=96.2, upper quartile=97.5, upper whisker=99}, color=blue!70!black, fill=blue!30] coordinates {};
-\addplot+[boxplot prepared={lower whisker=92, lower quartile=94, median=95.4, upper quartile=96.8, upper whisker=98}, color=blue!70!black, fill=blue!20] coordinates {};
-\addplot+[boxplot prepared={lower whisker=72, lower quartile=75, median=78, upper quartile=80, upper whisker=82}, color=blue!70!black, fill=blue!10] coordinates {};
-\addplot+[boxplot prepared={lower whisker=92, lower quartile=94.5, median=96.0, upper quartile=97.2, upper whisker=98.5}, color=blue!70!black, fill=blue!35] coordinates {};
-\end{axis}
+\begin{tikzpicture}[x=1.65cm, y=0.15cm]
+    % Background horizontal grid lines
+    \foreach \y in {70, 75, 80, 85, 90, 95, 100} {
+        \draw[gray!25, dashed] (0.4, \y) -- (7.6, \y);
+        \node[left, font=\footnotesize] at (0.4, \y) {\y\%};
+    }
+    % Axes
+    \draw[thick, -{Stealth[length=5pt]}] (0.4, 70) -- (7.8, 70) node[below=14pt, midway, font=\footnotesize\bfseries] {Machine Learning Classifier};
+    \draw[thick, -{Stealth[length=5pt]}] (0.4, 70) -- (0.4, 103) node[above=2pt, font=\footnotesize\bfseries] {10-Fold CV Accuracy (\%)};
+    
+    % Classifier 1: LogReg (x=1, low=80, q1=83, med=85, q3=87, up=89)
+    \draw[blue!80!black, thick] (1, 80) -- (1, 89);
+    \draw[blue!80!black, thick] (0.85, 80) -- (1.15, 80);
+    \draw[blue!80!black, thick] (0.85, 89) -- (1.15, 89);
+    \filldraw[fill=blue!12, draw=blue!80!black, thick] (0.72, 83) rectangle (1.28, 87);
+    \draw[red!80!black, very thick] (0.72, 85) -- (1.28, 85);
+    \node[below=4pt, font=\footnotesize\bfseries] at (1, 70) {LogReg};
+    
+    % Classifier 2: KNN (x=2, low=88, q1=90, med=92, q3=94, up=96)
+    \draw[blue!80!black, thick] (2, 88) -- (2, 96);
+    \draw[blue!80!black, thick] (1.85, 88) -- (2.15, 88);
+    \draw[blue!80!black, thick] (1.85, 96) -- (2.15, 96);
+    \filldraw[fill=blue!12, draw=blue!80!black, thick] (1.72, 90) rectangle (2.28, 94);
+    \draw[red!80!black, very thick] (1.72, 92) -- (2.28, 92);
+    \node[below=4pt, font=\footnotesize\bfseries] at (2, 70) {KNN};
+    
+    % Classifier 3: DecTree (x=3, low=81, q1=84, med=86, q3=88, up=90)
+    \draw[blue!80!black, thick] (3, 81) -- (3, 90);
+    \draw[blue!80!black, thick] (2.85, 81) -- (3.15, 81);
+    \draw[blue!80!black, thick] (2.85, 90) -- (3.15, 90);
+    \filldraw[fill=blue!12, draw=blue!80!black, thick] (2.72, 84) rectangle (3.28, 88);
+    \draw[red!80!black, very thick] (2.72, 86) -- (3.28, 86);
+    \node[below=4pt, font=\footnotesize\bfseries] at (3, 70) {DecTree};
+    
+    % Classifier 4: RandForest (x=4, low=93, q1=95, med=96.2, q3=97.5, up=99) -- HIGHLIGHT TOP
+    \draw[blue!90!black, thick] (4, 93) -- (4, 99);
+    \draw[blue!90!black, thick] (3.85, 93) -- (4.15, 93);
+    \draw[blue!90!black, thick] (3.85, 99) -- (4.15, 99);
+    \filldraw[fill=blue!35, draw=blue!90!black, thick] (3.72, 95) rectangle (4.28, 97.5);
+    \draw[red!85!black, very thick] (3.72, 96.2) -- (4.28, 96.2);
+    \node[above=2pt, font=\tiny\bfseries, text=blue!90!black] at (4, 99) {96.2\%};
+    \node[below=4pt, font=\footnotesize\bfseries] at (4, 70) {RandForest};
+    
+    % Classifier 5: XGBoost (x=5, low=92, q1=94, med=95.4, q3=96.8, up=98)
+    \draw[blue!80!black, thick] (5, 92) -- (5, 98);
+    \draw[blue!80!black, thick] (4.85, 92) -- (5.15, 92);
+    \draw[blue!80!black, thick] (4.85, 98) -- (5.15, 98);
+    \filldraw[fill=blue!20, draw=blue!80!black, thick] (4.72, 94) rectangle (5.28, 96.8);
+    \draw[red!80!black, very thick] (4.72, 95.4) -- (5.28, 95.4);
+    \node[below=4pt, font=\footnotesize\bfseries] at (5, 70) {XGBoost};
+    
+    % Classifier 6: AdaBoost (x=6, low=72, q1=75, med=78, q3=80, up=82)
+    \draw[blue!80!black, thick] (6, 72) -- (6, 82);
+    \draw[blue!80!black, thick] (5.85, 72) -- (6.15, 72);
+    \draw[blue!80!black, thick] (5.85, 82) -- (6.15, 82);
+    \filldraw[fill=blue!10, draw=blue!80!black, thick] (5.72, 75) rectangle (6.28, 80);
+    \draw[red!80!black, very thick] (5.72, 78) -- (6.28, 78);
+    \node[below=4pt, font=\footnotesize\bfseries] at (6, 70) {AdaBoost};
+    
+    % Classifier 7: SVM (x=7, low=92, q1=94.5, med=96.0, q3=97.2, up=98.5) -- HIGHLIGHT TOP
+    \draw[blue!90!black, thick] (7, 92) -- (7, 98.5);
+    \draw[blue!90!black, thick] (6.85, 92) -- (7.15, 92);
+    \draw[blue!90!black, thick] (6.85, 98.5) -- (7.15, 98.5);
+    \filldraw[fill=blue!35, draw=blue!90!black, thick] (6.72, 94.5) rectangle (7.28, 97.2);
+    \draw[red!85!black, very thick] (6.72, 96.0) -- (7.28, 96.0);
+    \node[above=2pt, font=\tiny\bfseries, text=blue!90!black] at (7, 98.5) {96.0\%};
+    \node[below=4pt, font=\footnotesize\bfseries] at (7, 70) {SVM};
+    
+    % Legend
+    \begin{scope}[shift={(5.1, 73)}]
+        \filldraw[fill=blue!35, draw=blue!90!black] (0, 0) rectangle (0.35, 1.8);
+        \draw[red!85!black, very thick] (0, 0.9) -- (0.35, 0.9);
+        \node[right, font=\tiny] at (0.4, 0.9) {Red line: Median; Box: IQR [Q1, Q3]};
+    \end{scope}
 \end{tikzpicture}%
 }
 \caption{BOX PLOT OF CROSS VALIDATION ACCURACIES FOR ALL 7 CLASSIFIERS: Random Forest and Support Vector Machine demonstrate the highest median accuracy and tightest interquartile ranges.}
@@ -819,25 +871,25 @@ Random Forest Inference (200 trees)  & 9.447 & 9.976 & 1.89\% & Feasible \\
     xbar,
     bar width=8pt,
     width=11cm,
-    height=3.2cm,
+    height=3.4cm,
     xmode=log,
     xmin=0.02, xmax=3500,
+    ymin=0.4, ymax=4.6,
     xlabel={Execution Latency per Window (ms) --- Logarithmic Scale},
-    symbolic y coords={SVM Infer, Feat Extr, RF Infer, Step Budget},
-    ytick=data,
-    nodes near coords*={\pgfplotspointmeta},
+    ytick={1, 2, 3, 4},
+    yticklabels={SVM Infer, Feat Extr, RF Infer, Step Budget},
+    nodes near coords,
     nodes near coords align={horizontal},
     nodes near coords style={font=\footnotesize\bfseries},
     point meta=explicit symbolic,
     xmajorgrids=true,
     grid style=dashed
 ]
-\addplot[fill=blue!70!black, draw=black] table[meta=label] {
-x y label
-0.092 {SVM Infer} {0.092 ms}
-1.183 {Feat Extr} {1.18 ms}
-9.447 {RF Infer} {9.45 ms}
-500.0 {Step Budget} {500.0 ms}
+\addplot[fill=blue!70!black, draw=black] coordinates {
+    (0.092, 1) [0.092 ms]
+    (1.183, 2) [1.18 ms]
+    (9.447, 3) [9.45 ms]
+    (500.0, 4) [500.0 ms]
 };
 \end{axis}
 \end{tikzpicture}%
